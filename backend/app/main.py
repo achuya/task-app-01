@@ -8,7 +8,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORSの設定（フロントエンドからのアクセスを許可）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,8 +16,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(tasks.router)
-
+# /api プレフィックスを追加
+app.include_router(tasks.router, prefix="/api")
 
 @app.get("/health")
 def health_check():
