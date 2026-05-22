@@ -94,8 +94,19 @@ resource "aws_security_group" "rds" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [aws_security_group.backend.id, aws_security_group.bastion.id]
-    description     = "MySQL from backend and bastion"
+    security_groups = [
+      aws_security_group.backend.id,
+      aws_security_group.bastion.id
+    ]
+    description = "MySQL from backend and bastion"
+  }
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.3.0/24", "10.0.4.0/24"]
+    description = "MySQL from worker (private subnets)"
   }
 
   egress {

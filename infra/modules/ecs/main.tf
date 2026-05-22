@@ -74,6 +74,11 @@ resource "aws_iam_role_policy" "ecs_task_s3" {
           "s3:DeleteObject"
         ]
         Resource = "arn:aws:s3:::${var.s3_bucket}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = ["sqs:SendMessage"]
+        Resource = "arn:aws:sqs:ap-northeast-1:058898200941:task-app-csv-export"
       }
     ]
   })
@@ -146,6 +151,10 @@ resource "aws_ecs_task_definition" "backend" {
         {
           name  = "CLOUDFRONT_DOMAIN"
           value = var.cloudfront_domain
+        },
+        {
+          name  = "SQS_QUEUE_URL"
+          value = "https://sqs.ap-northeast-1.amazonaws.com/058898200941/task-app-csv-export"
         }
       ]
       logConfiguration = {

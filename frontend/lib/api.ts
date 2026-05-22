@@ -108,3 +108,26 @@ export async function uploadToS3(
   });
   if (!res.ok) throw new Error("Failed to upload to S3");
 }
+
+// CSV出力リクエスト
+export async function createCsvExport(): Promise<CsvExportResponse> {
+  const res = await fetch(`${API_URL}/tasks/csv-export`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to create CSV export");
+  return res.json();
+}
+
+// CSV出力状態確認
+export async function getCsvExport(id: number): Promise<CsvExportResponse> {
+  const res = await fetch(`${API_URL}/tasks/csv-export/${id}`);
+  if (!res.ok) throw new Error("Failed to get CSV export");
+  return res.json();
+}
+
+export type CsvExportResponse = {
+  id: number;
+  status: string;
+  file_url: string | null;
+  created_at: string;
+};

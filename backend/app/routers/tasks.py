@@ -5,6 +5,7 @@ from app.database import get_db
 import boto3
 import os
 import uuid
+import json
 
 router = APIRouter(
     prefix="/tasks",
@@ -15,7 +16,7 @@ S3_BUCKET = os.getenv("S3_BUCKET", "")
 AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-1")
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN", "")
 CLOUDFRONT_KEY_PAIR_ID = os.getenv("CLOUDFRONT_KEY_PAIR_ID", "")
-
+SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL", "")
 
 # ===== タスクのCRUD =====
 
@@ -130,3 +131,33 @@ def get_image_url(task_id: int, db: Session = Depends(get_db)):
     url = f"https://{CLOUDFRONT_DOMAIN}/{task.picture_url}"
 
     return schemas.ImageUrlResponse(url=url)
+
+import boto3
+import os
+
+SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL", "")
+
+@router.post("/csv-export", response_model=schemas.CsvExportResponse, status_code=201)
+def create_csv_export(db: Session = Depends(get_db)):
+    # csv_exportsテーブルにレコードを作成
+    export = models.CsvExport(status=models.CsvExportStatus.pending)
+    db.add(export)
+    db.commit()
+    db.refresh(export)
+
+    # SQSにメッセージを送る
+    sqs_client = boto3.client("sqs", region_name=os.getenv("AWS_REGION", "ap-northeast-1"))
+    sqs_client.send_message(
+        QueueUrl=SQS_QUEUE_URL,
+        MessageBody=json.dumps({"export_id": export.id})
+    )
+
+    return export
+
+
+@router.get("/csv-export/{export_id}", response_model=schemas.CsvExportResponse)
+def get_csv_export(export_id: int, db: Session = Depends(get_db)):
+    export = db.query(models.CsvExport).filter(models.CsvExport.id == export_id).first()
+    if not export:
+        raise HTTPException(status_code=404, detail="Export not found")
+    return export
