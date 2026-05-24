@@ -58,7 +58,7 @@ module "cloudfront" {
 module "waf" {
   source           = "./modules/waf"
   alb_arn          = module.alb.alb_arn
-  maintenance_mode = false
+  maintenance_mode = var.maintenance_mode
 }
 
 # ECS

@@ -48,3 +48,9 @@ variable "task_memory" {
   description = "ECS task memory"
   type        = number
 }
+
+variable "maintenance_mode" {
+  description = "Enable maintenance mode"
+  type        = bool
+  default     = false
+}

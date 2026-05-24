@@ -78,7 +78,7 @@ def get_upload_url(task_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Task not found")
 
     s3_client = boto3.client("s3", region_name=AWS_REGION)
-    key = f"tasks/{task_id}/{uuid.uuid4()}.jpg"
+    key = f"images/tasks/{task_id}/{uuid.uuid4()}.jpg"
 
     upload_url = s3_client.generate_presigned_url(
         "put_object",
@@ -94,7 +94,6 @@ def get_upload_url(task_id: int, db: Session = Depends(get_db)):
         upload_url=upload_url,
         key=key
     )
-
 
 @router.post("/{task_id}/confirm-upload", response_model=schemas.TaskResponse)
 def confirm_upload(
